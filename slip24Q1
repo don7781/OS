@@ -1,0 +1,92 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/wait.h> // Added for wait()
+
+void ChildProcess();
+void ParentProcess();
+void bubble(int[], int);
+void insert(int[], int);
+
+int main()
+{
+    int i, n;
+    printf("How many values: ");
+    scanf("%d", &n);
+    int a[n];
+    printf("\nEnter actual values: ");
+    for(i = 0; i < n; i++)
+        scanf("%d", &a[i]);
+
+    pid_t pid;
+    pid = fork();
+
+    if(pid == 0)
+    {
+        ChildProcess();
+        insert(a, n);
+        printf("\nThe sorted array using Insertion sort in Child process is :\n");
+        for(i = 0; i < n; i++)
+            printf("\t%d", a[i]);
+        printf("\n");
+    }
+    else if(pid > 0)
+    {
+        ParentProcess();
+        bubble(a, n);
+        printf("\nThe sorted array using Bubble sort in Parent process is :\n");
+        for(i = 0; i < n; i++)
+            printf("\t%d", a[i]);
+        printf("\n");
+        wait(NULL); // Correct wait usage
+    }
+    else
+    {
+        perror("fork failed");
+    }
+
+    return 0;
+}
+
+void ChildProcess()
+{
+    printf("\nI am Child Process....\n");
+    printf("My Id is: %d\n", getpid());
+}
+
+void ParentProcess()
+{
+    printf("\nI am Parent Process....\n");
+    printf("My Id is: %d\n", getpid()); // Corrected: print parent PID with getpid()
+}
+
+void bubble(int x[], int n)
+{
+    int i, pass, temp;
+    for(pass = 1; pass < n; pass++)
+    {
+        for(i = 0; i < n-1; i++)
+        {
+            if(x[i] > x[i+1])
+            {
+                temp = x[i];
+                x[i] = x[i+1];
+                x[i+1] = temp;
+            }
+        }
+    }
+}
+
+void insert(int x[], int n)
+{
+    int i, k, key;
+    for(k = 1; k < n; k++)
+    {
+        key = x[k];
+        for(i = k-1; i >= 0 && x[i] > key; i--)
+        {
+            x[i+1] = x[i];
+        }
+        x[i+1] = key;
+    }
+}
