@@ -1,0 +1,45 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <stdlib.h>
+
+int main() {
+    int n, i;
+    printf("Enter number of values: ");
+    scanf("%d", &n);
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("fork failed");
+        exit(1);
+    }
+
+    if (pid == 0) { // Child process
+        printf("Child process PID: %d\n", getpid());
+        int new_nice = nice(-5); // Increase priority
+        if (new_nice == -1)
+            perror("nice failed");
+        else
+            printf("Child new nice value: %d\n", new_nice);
+
+        printf("Child process printing values:\n");
+        for (i = 1; i <= n; i++) {
+            printf("Child: %d\n", i);
+        }
+        printf("Child finished work\n");
+    } else { // Parent process
+        printf("Parent process PID: %d\n", getpid());
+
+        printf("Parent process printing values:\n");
+        for (i = 1; i <= n; i++) {
+            printf("Parent: %d\n", i);
+        }
+
+        wait(NULL); // Wait for child
+        printf("Parent finished work\n");
+    }
+
+    return 0;
+}
